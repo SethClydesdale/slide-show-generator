@@ -1,0 +1,214 @@
+<!--
+  Slide show generator developed by Ange Tuteur(http://help.forumotion.com/u88576) for Forumotion forums
+  Distribution of this generator is allowed so long as the proper credits are intact
+
+  NOTE : the jQuery library is required for the animation() method to work, otherwise images will not rotate !
+--> 
+<style type="text/css">.fa_help {color:#FFF;font-weight:bold;background:#39C;border-radius:100px;position:absolute;display:inline-block;margin-left:-25px;padding:2px 5px;overflow:hidden;}.fa_help:hover {cursor:help;overflow:visible;}.fa_help .italic {display:block;font-weight:normal;background:url(http://i38.servimg.com/u/f38/18/21/41/30/alpha10.png);border-radius:3px;padding:3px;width:300px;position:absolute;left:25px;top:0;}#preview_block {background:url(http://i38.servimg.com/u/f38/18/21/41/30/alpha11.png);padding:30px;position:fixed;left:0;right:0;bottom:0;top:0;z-index:99999;overflow:auto;}</style>
+<script type="text/javascript">// <![CDATA[
+_slide = {
+  total : 1, // total amount of slides. this will increment and decrement based on the user activity
+  
+  // function to create a new slide
+  add : function() {
+    document.getElementById('slide'+_slide.total) && (document.getElementById('slide'+_slide.total).getElementsByTagName('DIV')[1].style.display = 'none');
+    _slide.total++; // increment total slides
+  
+    var a = document.createElement('DIV');
+    a.id = 'slide' + _slide.total;
+    a.innerHTML = '<div class="h3">Slide '+_slide.total+' <a href="#" onclick="_slide.hide(this);return false;" style="float:right;">(Toggle)</a></div><div><dl><dt><label>Link</label></dt><dd><span class="fa_help">?<span class="italic">URL that you want this image to take you to when clicked. ( optional )</span></span><input name="link'+_slide.total+'" type="text" class="inputbox" placeholder="http://help.forumotion.com"/></dd></dl><dl><dt><label>Image</label></dt><dd><span class="fa_help">?<span class="italic">URL of the image that you want this slide to show.</span></span><input name="image'+_slide.total+'" type="text" class="inputbox" placeholder="http://illiweb.com/fa/empty.gif"/></dd></dl><dl><dt><label>Tooltip</label></dt><dd><span class="fa_help">?<span class="italic">Simple description of the image. ( optional )</span></span><input name="tip'+_slide.total+'" type="text" class="inputbox" placeholder="Description"/></dd></dl></div>';
+    document.getElementById('slideData').appendChild(a);
+  },
+  
+  // function to remove the most recent slide
+  remove : function() {
+    if (!_slide.total) return alert('All slides have been deleted !');
+    var a = document.getElementById('slide'+_slide.total);
+    a.parentNode.removeChild(a);
+    _slide.total--; // decrement total slides
+    document.getElementById('slide'+_slide.total) && (document.getElementById('slide'+_slide.total).getElementsByTagName('DIV')[1].style.display = 'block');
+  },
+  
+  // simple display toggle for slides
+  // if there are textNodes as the nextSibling this will not work !
+  hide : function (el) {
+    var a = el.parentNode.nextSibling;
+    /none/.test(a.style.display) ? a.style.display = 'block' : a.style.display = 'none';
+  },
+  
+  // generate the code so the member can copy and paste it
+  // less work = happy user :)
+  generate : function() {
+    if (!_slide.total) return alert('You must include at least one image slide.');
+    var slides = '', i = 1, j = _slide.total + 1, s = document.slide, width = s.width.value.length ? s.width.value : '180px', height = s.height.value.length ? s.height.value : '135px', n = +new Date;
+    for (; i<j; i++) slides += '<a ' + ( i == 1 ? 'id="itemActif'+n+'" style="z-index:999"' : '' ) + ' href="' + ( s['link'+i].value.length ? s['link'+i].value : '#' ) + '" title="' + ( s['tip'+i].value.length ? s['tip'+i].value : '' ) + '" target="_blank"><img src="' + ( s['image'+i].value.length ? s['image'+i].value : 'http://illiweb.com/fa/empty.gif' ) + '" alt="' + ( s['tip'+i].value.length ? s['tip'+i].value : '' ) + '" /></a>';
+    document.getElementById('rotatorCode').value = '<style type="text/css">#rotator'+n+' {height:'+(Number(height.match(/\d+/)[0])+10)+'px;} #rotator'+n+' a{position:absolute;background:'+( s.background.value.length ? s.background.value : 'transparent' )+';border:1px solid '+( s.border.value.length ? s.border.value : 'transparent' )+';padding:4px;} #rotator'+n+' img { height:'+height+';width:'+width+'; }</style><div id="rotator'+n+'">' + slides + '</div><script type="text/javascript">(function(){var r = document.getElementById("rotator'+n+'"), l = r.getElementsByTagName("A"), rotate = window.setInterval(function() {var a = document.getElementById("itemActif'+n+'"), n = jQuery(a).next()[0] || l[0]; if (!a) return window.clearInterval(rotate); n.style.opacity = 1;n.style.zIndex = 998;jQuery(a).animate({"opacity":0},'+(s.fade_duration.value.length ? s.fade_duration.value : 800)+',"linear",function() {a.id = "";a.style.zIndex = "";n.id = "itemActif'+n+'";n.style.zIndex = 999})},'+(s.slide_duration.value.length ? s.slide_duration.value : 3500)+')})();<' + '/' + 'script>';
+  },
+  
+  preview : {
+    open : function() {
+      var preview = document.getElementById('code_preview'), code = document.getElementById('rotatorCode').value.replace(/\d{13}/g,+new Date), js = document.createElement('SCRIPT');
+      if (!code.length) return alert('There is no code to preview.');
+  
+      // applying the JS via innerHTML is ineffective !
+      js.type = 'text/javascript';
+      js.text = code.match(/<script.*?>(.*?)<\/script>/)[1];
+      preview.innerHTML = code.replace(/<script.*?>.*?<\/script>/,'');
+      preview.appendChild(js);
+      document.getElementById('preview_block').style.display = 'block';
+    },
+    
+    close : function() {
+      document.getElementById('preview_block').style.display = 'none';
+    }
+  },
+  
+  // this allows people to edit existing rotator codes
+  // if the sceditor applies corrections some regexes may not work
+  edit : function() {
+    if (!document.getElementById('rotatorCode').value) return;
+    for (var i = 1, j = _slide.total + 1; i<j; i++) _slide.remove(); // delete all existing slides
+  
+    _slide.preview.open(); // open a preview to initilize the code for looping 
+    _slide.preview.close(); // no one will know our dirty secret.. except you ^^
+  
+    var code = document.getElementById('code_preview'), a = code.getElementsByTagName('A'), b = code.innerHTML, s = document.slide;
+    s.slide_duration.value = b.match(/\)\},(\d+)\)\}/).length ? b.match(/\)\},(\d+)\)\}/)[1] : 3500;
+    s.fade_duration.value = b.match(/,(\d+),/).length ? b.match(/,(\d+),/)[1] : 800;
+  
+    s.height.value = b.match(/img\s+\{\s+height:(.*?);/).length ? b.match(/img\s+\{\s+height:(.*?);/)[1] : '110px';
+    s.width.value = b.match(/width:(.*?);/).length ? b.match(/width:(.*?);/)[1] : '150px';
+  
+    s.background.value = b.match(/background:(.*?);/).length ? b.match(/background:(.*?);/)[1] : '#FFF';
+    s.border.value = b.match(/border:1px solid (.*?);/).length ? b.match(/border:1px solid (.*?);/)[1] : '#CCC';
+  
+    // loop the preview links to get all slides data
+    for (var i = 0, j = a.length, n = 1; i<j; i++, n++) {
+      _slide.add(); // create a new slide for the following values
+      s['link'+n].value = a[i].href;
+      s['image'+n].value = a[i].getElementsByTagName('IMG')[0].src;
+      s['tip'+n].value = a[i].title;
+    }
+  }
+};
+//]]></script>
+
+<div class="panel introduction">
+  <div class="h3">Slide show</div>
+  This tool will allow you to create a slide show by using images, just like the example below :
+  <br/><br/>
+  <style type="text/css">#rotator1425431048770 {height:145px;} #rotator1425431048770 a{position:absolute;background:#FFFFFF;border:1px solid #CCCCCC;padding:4px;} #rotator1425431048770 img { height:135px;width:180px; }</style><div id="rotator1425431048770"><a id="itemActif1425431048770" style="z-index:999" href="http://en.hitskin.com/search-a-skin/mocha-coffee/206754" title="Mocha Coffee" target="_blank"><img src="http://hitsk.in/s/20/67/54/thumb.jpg" alt="Mocha Coffee" /></a><a  href="http://en.hitskin.com/search-a-skin/hotlime/129358" title="Hotlime" target="_blank"><img src="http://hitsk.in/s/12/93/58/thumb.jpg" alt="Hotlime" /></a><a  href="http://en.hitskin.com/search-a-skin/fc-mattron/206627" title="FC Mattron" target="_blank"><img src="http://hitsk.in/s/20/66/27/thumb.jpg" alt="FC Mattron" /></a><a  href="http://en.hitskin.com/search-a-skin/prosilverlight/206964" title="Prosilverlight" target="_blank"><img src="http://hitsk.in/s/20/69/64/thumb.jpg" alt="Prosilverlight" /></a><a  href="http://en.hitskin.com/search-a-skin/sakura-pink/207133" title="Sakura Pink" target="_blank"><img src="http://hitsk.in/s/20/71/33/thumb.jpg" alt="Sakura Pink" /></a><a  href="http://en.hitskin.com/search-a-skin/happy-valentine-s-day/206880" title="Happy Valentine's Day" target="_blank"><img src="http://hitsk.in/s/20/68/80/thumb.jpg" alt="Happy Valentine's Day" /></a></div><script type="text/javascript">(function(){var r = document.getElementById("rotator1425431048770"), l = r.getElementsByTagName("A"), rotate = window.setInterval(function() {var a = document.getElementById("itemActif1425431048770"), n = jQuery(a).next()[0] || l[0];n.style.opacity = 1;n.style.zIndex = 998;jQuery(a).animate({"opacity":0},800,"linear",function() {a.id = "";a.style.zIndex = "";n.id = "itemActif1425431048770";n.style.zIndex = 999})},3500)})();</script>
+  <br/>
+  <strong>Instructions :</strong>
+  <ul style="margin-left:10px;">
+    <li>Choose to modify the duration, dimension, and color settings. <strong>( Optional )</strong></li>
+    <li>Fill in the slide information such as image, link, and tooltip.</li>
+    <li>Slides can be shown or hidden by clicking the <strong>(TOGGLE)</strong> buttons.</li>
+    <li>To add more slides, click the <strong style="color:#39C;">blue</strong> button.</li>
+    <li>To delete the most recent slide, click the <strong style="color:#E3371A;">red</strong> button.</li>
+    <li>When you're finised, click the <strong style="color:#84C754;">green</strong> button to generate your slide show code. You can then copy and paste this code into a widget or HTML page.</li>
+    <li>After your code has been generated, click the <strong style="color:#333;">black</strong> button to preview the result.</li>
+    <li>If you have an exisiting image slide show code, you can paste it in the textarea and click the <strong style="color:#EB3;">yellow</strong> button to load it into the editor.</li>
+  </ul>
+</div>
+<br/>
+
+<form name="slide" class="panel introduction" action="/h8-">
+  <fieldset id="slideData">
+    <div class="h3">Duration settings</div>
+    <dl>
+      <dt><label>Slide Duration (milliseconds)</label></dt>
+      <dd>
+        <span class="fa_help">?<span class="italic">Amount of time the image is displayed. ( 3500 = 3.5 seconds )</span></span>
+        <input name="slide_duration" type="text" class="inputbox" value="3500"/>
+      </dd>
+    </dl>
+    
+    <dl>
+      <dt><label>Fade Duration (milliseconds)</label></dt>
+      <dd>
+        <span class="fa_help">?<span class="italic">Time it takes for the image to fade. ( 800 = 0.8 seconds )</span></span>
+        <input name="fade_duration" type="text" class="inputbox" value="800"/>
+      </dd>
+    </dl>
+    
+    <div class="h3">Dimension settings</div>
+    <dl>
+      <dt><label>Height</label></dt>
+      <dd>
+        <span class="fa_help">?<span class="italic">Defines the height of each image.</span></span>
+        <input name="height" type="text" class="inputbox" value="110px"/>
+      </dd>
+    </dl>
+    
+    <dl>
+      <dt><label>Width</label></dt>
+      <dd>
+        <span class="fa_help">?<span class="italic">Defines the width of each image.</span></span>
+        <input name="width" type="text" class="inputbox" value="150px"/>
+      </dd>
+    </dl>
+
+    <div class="h3">Color settings</div>
+    <dl>
+      <dt><label>Background Color</label></dt>
+      <dd>
+        <span class="fa_help">?<span class="italic">Background color of each slide. ( leave blank for transparency )</span></span>
+        <input name="background" type="text" class="inputbox" value="#FFFFFF"/>
+      </dd>
+    </dl>
+    
+    <dl>
+      <dt><label>Border Color</label></dt>
+      <dd>
+        <span class="fa_help">?<span class="italic">Border color of each slide. ( leave blank for transparency )</span></span>
+        <input name="border" type="text" class="inputbox" value="#CCCCCC"/>
+      </dd>
+    </dl>
+    
+    <div id="slide1">
+      <div class="h3">Slide 1 <a href="#" onclick="_slide.hide(this);return false;" style="float:right;">(Toggle)</a></div><div>
+        <dl>
+          <dt><label>Link</label></dt>
+          <dd>
+            <span class="fa_help">?<span class="italic">URL that you want this image to take you to when clicked. ( optional )</span></span>
+            <input name="link1" type="text" class="inputbox" placeholder="http://help.forumotion.com"/>
+          </dd>
+        </dl>
+        
+        <dl>
+          <dt><label>Image</label></dt>
+          <dd>
+            <span class="fa_help">?<span class="italic">URL of the image that you want this slide to show.</span></span>
+            <input name="image1" type="text" class="inputbox" placeholder="http://illiweb.com/fa/empty.gif"/>
+          </dd>
+        </dl>
+    
+        <dl>
+          <dt><label>Tooltip</label></dt>
+          <dd>
+            <span class="fa_help">?<span class="italic">Simple description of the image. ( optional )</span></span>
+            <input name="tip1" type="text" class="inputbox" placeholder="Description"/>
+          </dd>
+        </dl>
+      </div>
+    </div>
+    
+    
+  </fieldset>
+  <br/>
+  <div class="center" style="position:relative;">
+    <input onclick="_slide.remove();" style="background:#E3371A !important;" class="button1" type="button" value="DELETE SLIDE"/>
+    <input onclick="_slide.add();" style="background:#39C !important;" class="button1" type="button" value="ADD SLIDE"/>
+    <input onclick="_slide.generate();" style="background:#84C754 !important;" class="button1" type="button" value="GENERATE CODE"/>
+    <br/>
+    <div class="h3" style="text-align:left">Code</div>
+    
+    <span style="text-align:left;top:50%;margin:0;" class="fa_help">?<span class="italic" style="top:-100%;width:450px;">Your code will be available after clicking the generate button. Copy the code and then paste it where HTML formats, such as the homepage message, widgets, or an HTML page. Click the preview button to preview this code, and if you want to edit existing code, paste it in the textarea and click "edit code."</span></span>
+    <textarea id="rotatorCode" class="inputbox" style="resize:none;height:100px;width:95%;margin:6px 0 6px 25px;" onclick="this.select();"></textarea>
+    
+    <input onclick="_slide.preview.open();" style="background:#333 !important;" class="button1" type="button" value="PREVIEW CODE"/>
+    <input onclick="_slide.edit();" style="background:#EB3 !important;" class="button1" type="button" value="EDIT CODE"/>  
+  </div>
+</form>
+<div id="preview_block" style="display:none;"><div class="panel introduction"><div class="h3">Preview</div><div id="code_preview"></div><div class="center"><input onclick="_slide.preview.close();" style="background:#E3371A !important;" class="button1" type="button" value="CLOSE"/></div></div></div>
