@@ -1,0 +1,205 @@
+<!--
+  Slide show generator developed by Ange Tuteur(http://help.forumotion.com/u88576) for Forumotion forums
+  Translation to French by Vivi(http://forum.forumactif.com/u36001) of Forumactif
+  Distribution of this generator is allowed so long as the proper credits are intact
+
+  NOTE : the jQuery library is required for the animation() method to work, otherwise images will not rotate !
+--> 
+<style type="text/css">.fa_help {color:#FFF;font-weight:bold;background:#39C;border-radius:100px;position:absolute;display:inline-block;margin-left:-25px;padding:2px 5px;overflow:hidden;}.fa_help:hover {cursor:help;overflow:visible;}.fa_help .italic {display:block;font-weight:normal;background:url(http://i38.servimg.com/u/f38/18/21/41/30/alpha10.png);border-radius:3px;padding:3px;width:300px;position:absolute;left:25px;top:0;}#preview_block {background:url(http://i38.servimg.com/u/f38/18/21/41/30/alpha11.png);padding:30px;position:fixed;left:0;right:0;bottom:0;top:0;z-index:99999;overflow:auto;}</style>
+<script type="text/javascript">// <![CDATA[
+_slide = {
+  total : 1,
+  
+  add : function() {
+    document.getElementById('slide'+_slide.total) && (document.getElementById('slide'+_slide.total).getElementsByTagName('DIV')[1].style.display = 'none');
+    _slide.total++;
+  
+    var a = document.createElement('DIV');
+    a.id = 'slide' + _slide.total;
+    a.innerHTML = '<div class="h3">Diapo '+_slide.total+' <a href="#" onclick="_slide.hide(this);return false;" style="float:right;">(Masquer/Afficher)</a></div><div><dl><dt><label>Lien</label></dt><dd><span class="fa_help">?<span class="italic">Adresse de destination lors du clic sur l\'image ( optionnel )</span></span><input name="link'+_slide.total+'" type="text" class="inputbox" placeholder="http://forum.forumactif.com"/></dd></dl><dl><dt><label>Lien de l\'image</label></dt><dd><span class="fa_help">?<span class="italic">Adresse de l\'image que vous voulez afficher pour cette diapo. ( .jpg, .png par exemple )</span></span><input name="image'+_slide.total+'" type="text" class="inputbox" placeholder="http://illiweb.com/fa/empty.gif"/></dd></dl><dl><dt><label>Titre de l\'image</label></dt><dd><span class="fa_help">?<span class="italic">Description de l\'image ( optionnel )</span></span><input name="tip'+_slide.total+'" type="text" class="inputbox" placeholder="Description"/></dd></dl></div>';
+    document.getElementById('slideData').appendChild(a);
+  },
+  
+  remove : function() {
+    if (!_slide.total) return alert('Tous les diapos ont été supprimée!');
+    var a = document.getElementById('slide'+_slide.total);
+    a.parentNode.removeChild(a);
+    _slide.total--;
+    document.getElementById('slide'+_slide.total) && (document.getElementById('slide'+_slide.total).getElementsByTagName('DIV')[1].style.display = 'block');
+  },
+  
+  hide : function (el) {
+    var a = el.parentNode.nextSibling;
+    /none/.test(a.style.display) ? a.style.display = 'block' : a.style.display = 'none';
+  },
+  
+  generate : function() {
+    if (!_slide.total) return alert('Vous devez inclure au moins une diapo.');
+    var slides = '', i = 1, j = _slide.total + 1, s = document.slide, width = s.width.value.length ? s.width.value : '180px', height = s.height.value.length ? s.height.value : '135px', n = +new Date;
+    for (; i<j; i++) slides += '<a ' + ( i == 1 ? 'id="itemActif'+n+'" style="z-index:999"' : '' ) + ' href="' + ( s['link'+i].value.length ? s['link'+i].value : '#' ) + '" title="' + ( s['tip'+i].value.length ? s['tip'+i].value : '' ) + '" target="_blank"><img src="' + ( s['image'+i].value.length ? s['image'+i].value : 'http://illiweb.com/fa/empty.gif' ) + '" alt="' + ( s['tip'+i].value.length ? s['tip'+i].value : '' ) + '" /></a>';
+    document.getElementById('rotatorCode').value = '<style type="text/css">#rotator'+n+' {height:'+(Number(height.match(/\d+/)[0])+10)+'px;} #rotator'+n+' a{position:absolute;background:'+( s.background.value.length ? s.background.value : 'transparent' )+';border:1px solid '+( s.border.value.length ? s.border.value : 'transparent' )+';padding:4px;} #rotator'+n+' img { height:'+height+';width:'+width+'; }</style><div id="rotator'+n+'">' + slides + '</div><script type="text/javascript">(function(){var r = document.getElementById("rotator'+n+'"), l = r.getElementsByTagName("A"), rotate = window.setInterval(function() {var a = document.getElementById("itemActif'+n+'"), n = jQuery(a).next()[0] || l[0]; if (!a) return window.clearInterval(rotate); n.style.opacity = 1;n.style.zIndex = 998;jQuery(a).animate({"opacity":0},'+(s.fade_duration.value.length ? s.fade_duration.value : 800)+',"linear",function() {a.id = "";a.style.zIndex = "";n.id = "itemActif'+n+'";n.style.zIndex = 999})},'+(s.slide_duration.value.length ? s.slide_duration.value : 3500)+')})();<' + '/' + 'script>';
+  },
+  
+  preview : {
+    open : function() {
+      var preview = document.getElementById('code_preview'), code = document.getElementById('rotatorCode').value.replace(/\d{13}/g,+new Date), js = document.createElement('SCRIPT');
+      if (!code.length) return alert('Il n\'y a code pas pour prévisualiser.');
+  
+      js.type = 'text/javascript';
+      js.text = code.match(/<script.*?>(.*?)<\/script>/)[1];
+      preview.innerHTML = code.replace(/<script.*?>.*?<\/script>/,'');
+      preview.appendChild(js);
+      document.getElementById('preview_block').style.display = 'block';
+    },
+    
+    close : function() {
+      document.getElementById('preview_block').style.display = 'none';
+    }
+  },
+  
+  edit : function() {
+    if (!document.getElementById('rotatorCode').value) return;
+    for (var i = 1, j = _slide.total + 1; i<j; i++) _slide.remove();
+  
+    _slide.preview.open(); 
+    _slide.preview.close();
+  
+    var code = document.getElementById('code_preview'), a = code.getElementsByTagName('A'), b = code.innerHTML, s = document.slide;
+    s.slide_duration.value = b.match(/\)\},(\d+)\)\}/).length ? b.match(/\)\},(\d+)\)\}/)[1] : 3500;
+    s.fade_duration.value = b.match(/,(\d+),/).length ? b.match(/,(\d+),/)[1] : 800;
+  
+    s.height.value = b.match(/img\s+\{\s+height:(.*?);/).length ? b.match(/img\s+\{\s+height:(.*?);/)[1] : '110px';
+    s.width.value = b.match(/width:(.*?);/).length ? b.match(/width:(.*?);/)[1] : '150px';
+  
+    s.background.value = b.match(/background:(.*?);/).length ? b.match(/background:(.*?);/)[1] : '#FFF';
+    s.border.value = b.match(/border:1px solid (.*?);/).length ? b.match(/border:1px solid (.*?);/)[1] : '#CCC';
+  
+    for (var i = 0, j = a.length, n = 1; i<j; i++, n++) {
+      _slide.add();
+      s['link'+n].value = a[i].href;
+      s['image'+n].value = a[i].getElementsByTagName('IMG')[0].src;
+      s['tip'+n].value = a[i].title;
+    }
+  }
+};
+//]]></script>
+
+<div class="panel introduction">
+  <div class="h3">Diaporama</div>
+  Cet outil permet de créer un diaporama avec des images comme sur l'exemple suivant : 
+  <br/><br/>
+  <style type="text/css">#rotator1425431048770 {height:145px;} #rotator1425431048770 a{position:absolute;background:#FFFFFF;border:1px solid #CCCCCC;padding:4px;} #rotator1425431048770 img { height:135px;width:180px; }</style><div id="rotator1425431048770"><a id="itemActif1425431048770" style="z-index:999" href="http://en.hitskin.com/search-a-skin/mocha-coffee/206754" title="Mocha Coffee" target="_blank"><img src="http://hitsk.in/s/20/67/54/thumb.jpg" alt="Mocha Coffee" /></a><a  href="http://en.hitskin.com/search-a-skin/hotlime/129358" title="Hotlime" target="_blank"><img src="http://hitsk.in/s/12/93/58/thumb.jpg" alt="Hotlime" /></a><a  href="http://en.hitskin.com/search-a-skin/fc-mattron/206627" title="FC Mattron" target="_blank"><img src="http://hitsk.in/s/20/66/27/thumb.jpg" alt="FC Mattron" /></a><a  href="http://en.hitskin.com/search-a-skin/prosilverlight/206964" title="Prosilverlight" target="_blank"><img src="http://hitsk.in/s/20/69/64/thumb.jpg" alt="Prosilverlight" /></a><a  href="http://en.hitskin.com/search-a-skin/sakura-pink/207133" title="Sakura Pink" target="_blank"><img src="http://hitsk.in/s/20/71/33/thumb.jpg" alt="Sakura Pink" /></a><a  href="http://en.hitskin.com/search-a-skin/happy-valentine-s-day/206880" title="Happy Valentine's Day" target="_blank"><img src="http://hitsk.in/s/20/68/80/thumb.jpg" alt="Happy Valentine's Day" /></a></div><script type="text/javascript">(function(){var r = document.getElementById("rotator1425431048770"), l = r.getElementsByTagName("A"), rotate = window.setInterval(function() {var a = document.getElementById("itemActif1425431048770"), n = jQuery(a).next()[0] || l[0];n.style.opacity = 1;n.style.zIndex = 998;jQuery(a).animate({"opacity":0},800,"linear",function() {a.id = "";a.style.zIndex = "";n.id = "itemActif1425431048770";n.style.zIndex = 999})},3500)})();</script>
+  <br/>
+  <strong>Instructions :</strong>
+  <ul style="margin-left:10px;">
+    <li>Choisissez de modifier les paramètres de durée, la taille ou les couleurs du diaporama. <strong>( Optionnel )</strong></li>
+    <li>Remplissez les informations des diapos: image, lien de l'image, titre de l'image.</li>
+    <li>Les diapos peuvent être affichées ou masquées en cliquant sur le bouton <strong>(Masquer/Afficher)</strong>.</li>
+    <li>Pour ajouter plus de diapos, cliquez sur le bouton <strong style="color:#39C;">bleu</strong>.</li>
+    <li>Pour supprimer la diapo la plus récente, cliquez sur le bouton <strong style="color:#E3371A;">rouge</strong>.</li>
+    <li>Une fois terminé, cliquez sur le bouton <strong style="color:#84C754;">vert</strong> pour générer le code du diaporama. Vous pouvez ensuite copier le code et le coller dans un widget ou une page HTML.</li>
+    <li>Une fois le code généré, cliquez sur le bouton <strong style="color:#333;">noir</strong> pour prévisualiser le résultat.</li>
+    <li>Si vous avez un code d'un diaporama que vous voulez modifier vous pouvez le coller dans la zone de code et cliquer le bouton <strong style="color:#EB3;">jaune</strong> pour le charger dans le formulaire.</li>
+  </ul>
+</div>
+<br/>
+
+<form name="slide" class="panel introduction" action="/h8-">
+  <fieldset id="slideData">
+    <div class="h3">Paramètres de défilement</div>
+    <dl>
+      <dt><label>Durée d'affichage d'une diapo ( en millisecondes )</label></dt>
+      <dd>
+        <span class="fa_help">?<span class="italic">Durée pendant laquelle une image est affichée. ( 3500 = 3.5 secondes )</span></span>
+        <input name="slide_duration" type="text" class="inputbox" value="3500"/>
+      </dd>
+    </dl>
+    
+    <dl>
+      <dt><label>Durée de l'effet de transition ( en millisecondes )</label></dt>
+      <dd>
+        <span class="fa_help">?<span class="italic">Durée du fondu de transition. ( 800 = 0.8 secondes )</span></span>
+        <input name="fade_duration" type="text" class="inputbox" value="800"/>
+      </dd>
+    </dl>
+    
+    <div class="h3">Paramètres de taille</div>
+    <dl>
+      <dt><label>Hauteur</label></dt>
+      <dd>
+        <span class="fa_help">?<span class="italic">Définit la hauteur des images.</span></span>
+        <input name="height" type="text" class="inputbox" value="110px"/>
+      </dd>
+    </dl>
+    
+    <dl>
+      <dt><label>Largeur</label></dt>
+      <dd>
+        <span class="fa_help">?<span class="italic">Définit la largeur des images.</span></span>
+        <input name="width" type="text" class="inputbox" value="150px"/>
+      </dd>
+    </dl>
+
+    <div class="h3">Paramètres de couleur</div>
+    <dl>
+      <dt><label>Couleur de fond</label></dt>
+      <dd>
+        <span class="fa_help">?<span class="italic">Couleur de fond de diapos. ( laisser vide pour un fond transparent )</span></span>
+        <input name="background" type="text" class="inputbox" value="#FFFFFF"/>
+      </dd>
+    </dl>
+    
+    <dl>
+      <dt><label>Couleur de la bordure</label></dt>
+      <dd>
+        <span class="fa_help">?<span class="italic">Couleur de bordure des diapos. ( laisser vide pour une bordure transparent )</span></span>
+        <input name="border" type="text" class="inputbox" value="#CCCCCC"/>
+      </dd>
+    </dl>
+    
+    <div id="slide1">
+      <div class="h3">Diapo 1 <a href="#" onclick="_slide.hide(this);return false;" style="float:right;">(Masquer/Afficher)</a></div><div>
+        <dl>
+          <dt><label>Lien</label></dt>
+          <dd>
+            <span class="fa_help">?<span class="italic">Adresse de destination lors du clic sur l'image ( optionnel )</span></span>
+            <input name="link1" type="text" class="inputbox" placeholder="http://forum.forumactif.com"/>
+          </dd>
+        </dl>
+        
+        <dl>
+          <dt><label>Lien de l'image</label></dt>
+          <dd>
+            <span class="fa_help">?<span class="italic">Adresse de l'image que vous voulez afficher pour cette diapo. ( .jpg, .png par exemple )</span></span>
+            <input name="image1" type="text" class="inputbox" placeholder="http://illiweb.com/fa/empty.gif"/>
+          </dd>
+        </dl>
+    
+        <dl>
+          <dt><label>Titre de l'image</label></dt>
+          <dd>
+            <span class="fa_help">?<span class="italic">Description de l'image ( optionnel )</span></span>
+            <input name="tip1" type="text" class="inputbox" placeholder="Description"/>
+          </dd>
+        </dl>
+      </div>
+    </div>
+    
+    
+  </fieldset>
+  <br/>
+  <div class="center" style="position:relative;">
+    <input onclick="_slide.remove();" style="background:#E3371A !important;" class="button1" type="button" value="SUPPRIMER LA DIAPO"/>
+    <input onclick="_slide.add();" style="background:#39C !important;" class="button1" type="button" value="AJOUTER LA DIAPO"/>
+    <input onclick="_slide.generate();" style="background:#84C754 !important;" class="button1" type="button" value="GÉNÉRER LE CODE"/>
+    <br/>
+    <div class="h3" style="text-align:left">Code</div>
+    
+    <span style="text-align:left;top:50%;margin:0;" class="fa_help">?<span class="italic" style="top:-100%;width:450px;">Le code sera disponible une fois avoir cliqué sur le bouton Générer le code. Copier le code puis le coller où le HTML est accepté (page d'accueil, widget, page HTML). Cliquer sur le bouton Prévisualiser pour voir le code et sur Éditer le code pour modifier un code existant une fois inséré dans la zone de saisie.</span></span>
+    <textarea id="rotatorCode" class="inputbox" style="resize:none;height:100px;width:95%;margin:6px 0 6px 25px;" onclick="this.select();"></textarea>
+    
+    <input onclick="_slide.preview.open();" style="background:#333 !important;" class="button1" type="button" value="PRÉVISUALISER"/>
+    <input onclick="_slide.edit();" style="background:#EB3 !important;" class="button1" type="button" value="ÉDITER LE CODE"/>  
+  </div>
+</form>
+<div id="preview_block" style="display:none;"><div class="panel introduction"><div class="h3">Prévisualisation</div><div id="code_preview"></div><div class="center"><input onclick="_slide.preview.close();" style="background:#E3371A !important;" class="button1" type="button" value="FERMER"/></div></div></div>
