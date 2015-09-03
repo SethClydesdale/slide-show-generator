@@ -21,7 +21,7 @@ _slide = {
   },
   
   remove : function() {
-    if (!_slide.total) return alert('Tous les diapos ont été supprimée!');
+    if (!_slide.total) return alert('Toutes les diapos ont été supprimées !');
     var a = document.getElementById('slide'+_slide.total);
     a.parentNode.removeChild(a);
     _slide.total--;
@@ -43,7 +43,7 @@ _slide = {
   preview : {
     open : function() {
       var preview = document.getElementById('code_preview'), code = document.getElementById('rotatorCode').value.replace(/\d{13}/g,+new Date), js = document.createElement('SCRIPT');
-      if (!code.length) return alert('Il n\'y a code pas pour prévisualiser.');
+      if (!code.length) return alert('Il n\'y a pas de code à prévisualiser.');
   
       js.type = 'text/javascript';
       js.text = code.match(/<script.*?>(.*?)<\/script>/)[1];
